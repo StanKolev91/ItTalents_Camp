@@ -34,7 +34,7 @@ public class TextFileSumarizer {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             MyThread myThread = (MyThread) o;
-            return Objects.equals(myThread.getName(), ((MyThread) o).getName());
+            return Objects.equals(myThread.getName(),((MyThread)o).getName());
         }
 
         @Override
@@ -61,7 +61,7 @@ public class TextFileSumarizer {
 
         HashMap<String, Integer> getListOfWords(String text) {
             String[] words = text.trim()
-                    .replaceAll("(?iu)[,.\\(\\)*&^%$#!_+(0-9)\"!?<>„\\[\\]\\t(a-z)]", " ")
+                    .replaceAll("[\\p{!isAlphabetic}]")
                     .replaceAll("(?i)(\n)"," ")
                     .split(" ");
             HashMap<String, Integer> wordsInText = null;
@@ -71,10 +71,19 @@ public class TextFileSumarizer {
                 if (!wordsInText.containsKey(word)) {
                     wordsInText.put(word, 0);
                 }
-                if (word.matches("((?i)\\w*война\\w*)|((?i)\\W*война\\W*)|((?i)\\w*война\\W*)|((?i)\\W*война\\w*)|((?i) *война *)")) {
+                if (word.matches("" +
+                        "((?i)\\w*война\\w*)|" +
+                        "((?i)\\W*война\\W*)|" +
+                        "((?i)\\w*война\\W*)|" +
+                        "((?i)\\W*война\\w*)|" +
+                        "((?i) *война *)")) {
                     warWordCounter.incrementAndGet();
                 }
-                if (word.matches("((?i)\\w*мир\\w*)|((?i)\\W*мир\\W*)|((?i)\\w*мир\\W*)|((?i)\\W*мир\\w*)")) {
+                if (word.matches("" +
+                        "((?i)\\w*мир\\w*)|" +
+                        "((?i)\\W*мир\\W*)|" +
+                        "((?i)\\w*мир\\W*)|" +
+                        "((?i)\\W*мир\\w*)")) {
                     peaceWordCounter.incrementAndGet();
                 }
 
@@ -115,7 +124,9 @@ public class TextFileSumarizer {
                 System.out.println("sorry " + e.getMessage());
             }
         } else {
-            System.out.println("Sorry, " + pathFile.substring(pathFile.lastIndexOf(File.separator) + 1) + " file not found!");
+            System.out.println(
+                    "Sorry, " + pathFile.substring(pathFile.lastIndexOf(File.separator) + 1) + " file not found!"
+            );
             return;
         }
 
@@ -132,6 +143,7 @@ public class TextFileSumarizer {
                 System.out.println("Interrupted thread!");
             }
         }
+
         for (MyThread thread : threads) {
 
             while (Character.toString(text.charAt(endIndx)).matches("[a-zA-Z]") && endIndx <= text.length() - 1) {
@@ -172,14 +184,16 @@ public class TextFileSumarizer {
         }
         long end = System.currentTimeMillis();
         long elapsedTime = end - start;
-        System.out.println("Elapsed time: " + elapsedTime / 1000 + "." + elapsedTime % 1000 + " sec\nAdditional threads used: " + threadsUsed + "/" + threadCountForProcessing);
+        System.out.println(
+                "Elapsed time: " + elapsedTime / 1000 + "." + elapsedTime % 1000
+                + " sec\nAdditional threads used: " + threadsUsed + "/" + threadCountForProcessing);
         showStatistic();
     }
 
     private void showStatistic() {
         System.out.println("\"War\" was encountered: " + warWordCounter);
         System.out.println("\"Peace\" was encountered: " + peaceWordCounter);
-        System.out.println("Comma \",\" was encaontered: "+counterComas);
+        System.out.println("Comma \",\" was encountered: "+counterComas);
         System.out.println("Word occurrences: ");
         System.out.println("Searched words in text: ");
         for (Map.Entry<String, AtomicInteger> entry : counterSrchdWrds.entrySet() ){
@@ -190,7 +204,8 @@ public class TextFileSumarizer {
             System.out.println("\t"+entry2.getKey() + " - " + entry2.getValue());
         }
     }
-    private void srchWrd(String text, String word) {
+
+    private void srchWrd(String text, String word) {  //char by char search
         aa:
         for (int i = 0; i < text.length(); i++) {
             if (Character.toString(text.charAt(i)).equalsIgnoreCase(Character.toString(word.charAt(0)))) {
